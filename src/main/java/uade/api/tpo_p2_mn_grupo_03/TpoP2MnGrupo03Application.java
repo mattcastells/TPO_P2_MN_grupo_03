@@ -4,10 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TpoP2MnGrupo03Application {
-
+public class TPOP2MNGrupo03Application {
     public static void main(String[] args) {
-        SpringApplication.run(TpoP2MnGrupo03Application.class, args);
+        SpringApplication.run(TPOP2MNGrupo03Application.class, args);
     }
-
-}
+} 
