@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
-import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.ProductService;
+import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
 
 /**
  * Controller for product operations.
@@ -16,7 +16,7 @@ import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.ProductService;
 @RequestMapping("/products")
 public class ProductController {
     @Autowired
-    private ProductService productService;
+    private IProductService productService;
 
     /**
      * Finds a product by ID.

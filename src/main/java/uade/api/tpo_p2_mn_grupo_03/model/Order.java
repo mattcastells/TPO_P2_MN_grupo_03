@@ -3,10 +3,12 @@ package uade.api.tpo_p2_mn_grupo_03.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
+
 import java.util.HashSet;
 
 @Entity
@@ -14,6 +16,7 @@ import java.util.HashSet;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,17 +32,32 @@ public class Order {
     @Column(nullable = false)
     private Double total;
 
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
     @Column(nullable = false)
-    private LocalDateTime date;
+    private Instant updatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status;
 
-    public Order(User user, Double total, LocalDateTime date, OrderStatus status) {
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
+
+    public Order(User user, Double total, OrderStatus status) {
         this.user = user;
         this.total = total;
-        this.date = date;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.status = status;
         this.products = new HashSet<>();
     }
@@ -50,7 +68,8 @@ public class Order {
                 "id=" + id +
                 ", user=" + (user != null ? user.getId() : null) +
                 ", total=" + total +
-                ", date=" + date +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 ", status=" + status +
                 '}';
     }

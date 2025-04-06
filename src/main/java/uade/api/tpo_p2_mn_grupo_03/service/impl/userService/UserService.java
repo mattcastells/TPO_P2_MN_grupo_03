@@ -5,13 +5,14 @@ import org.springframework.stereotype.Service;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.UserResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.repository.UserRepository;
+import uade.api.tpo_p2_mn_grupo_03.service.IUserService;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.userService.exception.UserNotFoundException;
 
 /**
  * Service for user operations.
  */
 @Service
-public class UserService {
+public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;

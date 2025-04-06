@@ -1,20 +1,18 @@
 package uade.api.tpo_p2_mn_grupo_03.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
+import lombok.Value;
+
+import java.time.Instant;
 
 /**
  * DTO for category responses.
  */
+@Value
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CategoryResponseDTO {
-    @JsonProperty("id")
     private Long id;
-
-    @JsonProperty("name")
     private String name;
+    private Instant createdAt;
+    private Instant updatedAt;
 } 

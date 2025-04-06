@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderResponseDTO;
-import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.OrderService;
+import uade.api.tpo_p2_mn_grupo_03.service.IOrderService;
 
 /**
  * Controller for order operations.
@@ -16,7 +16,7 @@ import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.OrderService;
 @RequestMapping("/orders")
 public class OrderController {
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
 
     /**
      * Finds an order by ID.

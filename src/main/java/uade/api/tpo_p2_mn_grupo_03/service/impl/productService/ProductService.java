@@ -6,12 +6,13 @@ import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.Product;
 import uade.api.tpo_p2_mn_grupo_03.repository.ProductRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.exception.ProductNotFoundException;
+import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
 
 /**
  * Service for product operations.
  */
 @Service
-public class ProductService {
+public class ProductService implements IProductService {
     @Autowired
     private ProductRepository productRepository;
 

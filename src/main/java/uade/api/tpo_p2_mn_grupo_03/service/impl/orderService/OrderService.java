@@ -8,6 +8,7 @@ import uade.api.tpo_p2_mn_grupo_03.model.Order;
 import uade.api.tpo_p2_mn_grupo_03.model.OrderProduct;
 import uade.api.tpo_p2_mn_grupo_03.repository.OrderRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.exception.OrderNotFoundException;
+import uade.api.tpo_p2_mn_grupo_03.service.IOrderService;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ import java.util.stream.Collectors;
  * Service for order operations.
  */
 @Service
-public class OrderService {
+public class OrderService implements IOrderService {
     @Autowired
     private OrderRepository orderRepository;
     /**
@@ -43,14 +44,14 @@ public class OrderService {
                 .map(this::convertOrderProductToDTO)
                 .collect(Collectors.toSet());
 
-        return new OrderResponseDTO(
-                order.getId(),
-                order.getUser().getId(),
-                order.getTotal(),
-                order.getDate(),
-                order.getStatus(),
-                productDTOs
-        );
+        return OrderResponseDTO.builder()
+                .id(order.getId())
+                .userId(order.getUser().getId())
+                .total(order.getTotal())
+                .createdAt(order.getCreatedAt())
+                .status(order.getStatus())
+                .products(productDTOs)
+                .build();
     }
 
     /**
@@ -60,10 +61,10 @@ public class OrderService {
      * @return The converted DTO
      */
     private OrderProductResponseDTO convertOrderProductToDTO(OrderProduct orderProduct) {
-        return new OrderProductResponseDTO(
-                orderProduct.getProduct().getId(),
-                orderProduct.getQuantity(),
-                orderProduct.getSubtotal()
-        );
+        return OrderProductResponseDTO.builder()
+                .productId(orderProduct.getProduct().getId())
+                .quantity(orderProduct.getQuantity())
+                .subtotal(orderProduct.getSubtotal())
+                .build();
     }
 } 

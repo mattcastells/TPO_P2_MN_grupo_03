@@ -3,16 +3,21 @@ package uade.api.tpo_p2_mn_grupo_03.model;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.time.Instant;
 
 @Entity
 @Table(name = "products")
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,9 +47,34 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
-
+    /*
+    * orden
+    *
+    * orders_products -- producto 1, quiero 2
+    *
+    * product
+    * */
     @OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<OrderProduct> orderProducts;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+        updatedAt = Instant.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = Instant.now();
+    }
 
     public Product(String name, String description, Double price, Integer stock, Set<String> images, Category category, User seller) {
         this.name = name;
