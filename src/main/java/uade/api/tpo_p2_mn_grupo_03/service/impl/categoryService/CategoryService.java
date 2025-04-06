@@ -25,6 +25,7 @@ public class CategoryService implements ICategoryService {
      * @return The category DTO
      * @throws CategoryNotFoundException if the category is not found
      */
+    @Override
     public CategoryResponseDTO findById(Long id) {
         return categoryRepository.findById(id)
                 .map(this::convertToDTO)
