@@ -3,49 +3,48 @@ package uade.api.tpo_p2_mn_grupo_03.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Set;
 
 /**
- * Data Transfer Object for product creation requests.
+ * Data Transfer Object for product update requests.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateProductRequestDTO {
+public class UpdateProductRequestDTO {
 
     /**
-     * The name of the product.
+     * The updated name of the product.
      */
     private String name;
 
     /**
-     * The description of the product.
+     * The updated description of the product.
      */
     private String description;
 
     /**
-     * The price of the product.
+     * The updated price of the product.
      */
     private Double price;
 
     /**
-     * The stock quantity available.
+     * The updated stock quantity.
      */
     private Integer stock;
 
     /**
-     * A set of image URLs for the product.
+     * A set of updated image URLs for the product.
      */
     private Set<String> images;
 
     /**
-     * The ID of the category this product belongs to.
+     * The ID of the updated category.
      */
     private Long categoryId;
 
     /**
-     * The ID of the seller who owns the product.
+     * The ID of the updated seller.
      */
     private Long sellerId;
 }
