@@ -1,7 +1,11 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.categoryService;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import uade.api.tpo_p2_mn_grupo_03.dto.request.CategoryPatchRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CategoryRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.CategoryResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.exception.DuplicateEntityException;
@@ -40,6 +44,18 @@ public class CategoryService implements ICategoryService {
         Category category = new Category(categoryRequestDTO.getName());
         Category savedCategory = categoryRepository.save(category);
         return convertToDTO(savedCategory);
+    }
+
+    @Override
+    public CategoryResponseDTO update(CategoryPatchRequestDTO categoryPatchRequestDTO) {
+        //TODO: Product Update
+
+        Category category = categoryRepository.findById(categoryPatchRequestDTO.getId())
+            .orElseThrow(() -> new CategoryNotFoundException(categoryPatchRequestDTO.getId()));
+
+        category.setName(categoryPatchRequestDTO.getName());
+        categoryRepository.save(category);
+        return convertToDTO(category);
     }
 
     /**
