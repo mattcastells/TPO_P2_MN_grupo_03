@@ -8,4 +8,5 @@ public interface ICategoryService {
     CategoryResponseDTO findById(Long id);
     CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO);
     CategoryResponseDTO update(CategoryPatchRequestDTO categoryRequestDTO);
+    CategoryResponseDTO delete(CategoryRequestDTO categoryRequestDTO);
 } 
