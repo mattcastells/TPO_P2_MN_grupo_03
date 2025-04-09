@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
+import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
+import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
+
 
 /**
  * Controller for handling product-related operations.
@@ -35,8 +40,10 @@ public class ProductController {
      * @return The created product DTO
      */
     @PostMapping
-    public ResponseEntity<ProductResponseDTO> create(@RequestBody CreateProductRequestDTO dto) {
-        ProductResponseDTO createdProduct = productService.createProduct(dto);
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<ProductResponseDTO> create(@Validated @RequestBody CreateProductRequestDTO dto, Authentication authorization) {
+        User user = (User) authorization.getPrincipal();
+        ProductResponseDTO createdProduct = productService.createProduct(dto, user);
         return ResponseEntity.ok(createdProduct);
     }
 

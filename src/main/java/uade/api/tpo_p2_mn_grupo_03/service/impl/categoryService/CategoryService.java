@@ -31,7 +31,7 @@ public class CategoryService implements ICategoryService {
                 .map(this::convertToDTO)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
-
+    
     @Override
     public CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO) {
         categoryRepository.findByNameIgnoreCase(categoryRequestDTO.getName())

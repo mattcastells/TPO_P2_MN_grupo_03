@@ -3,6 +3,7 @@ package uade.api.tpo_p2_mn_grupo_03.service;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
+import uade.api.tpo_p2_mn_grupo_03.model.User;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface IProductService {
      * @param dto The product creation data
      * @return The created product as a response DTO
      */
-    ProductResponseDTO createProduct(CreateProductRequestDTO dto);
+    ProductResponseDTO createProduct(CreateProductRequestDTO dto, User user);
 
     /**
      * Retrieves all products.
@@ -41,12 +42,12 @@ public interface IProductService {
      * @param dto The updated product data
      * @return The updated product as a response DTO
      */
-    ProductResponseDTO updateProduct(Long id, UpdateProductRequestDTO dto);
+    ProductResponseDTO updateProduct(Long productId, UpdateProductRequestDTO dto, User user);
 
     /**
      * Deletes a product by its ID.
      *
      * @param id The ID of the product to delete
      */
-    void deleteProduct(Long id);
+    void deleteProduct(Long productId, User user);
 }
