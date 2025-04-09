@@ -23,4 +23,8 @@ public class NotFoundException extends BaseAPIException {
     public NotFoundException(String resource, Long id) {
         super(String.format("%s with ID %d not found", resource, id), "NOT_FOUND", 404);
     }
+
+    public NotFoundException(String resource, String identifier) {
+        super(String.format("%s with %s not found", resource, identifier), "NOT_FOUND", 404);
+    }
 } 

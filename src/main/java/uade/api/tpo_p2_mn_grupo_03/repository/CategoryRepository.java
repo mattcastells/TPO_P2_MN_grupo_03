@@ -12,5 +12,5 @@ import uade.api.tpo_p2_mn_grupo_03.model.Category;
  */
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    Optional<Category> findByName(String name);
+    Optional<Category> findByNameIgnoreCase(String name);
 }

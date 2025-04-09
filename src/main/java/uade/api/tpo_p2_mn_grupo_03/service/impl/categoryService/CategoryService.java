@@ -34,11 +34,11 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO) {
-        categoryRepository.findByName(categoryRequestDTO.getName())
+        categoryRepository.findByNameIgnoreCase(categoryRequestDTO.getName())
             .ifPresent(category -> {
                 throw new DuplicateEntityException("Category already exists");
             });
-        Category category = new Category(categoryRequestDTO.getName());
+        Category category = new Category(categoryRequestDTO.getName().toLowerCase());
         Category savedCategory = categoryRepository.save(category);
         return convertToDTO(savedCategory);
     }

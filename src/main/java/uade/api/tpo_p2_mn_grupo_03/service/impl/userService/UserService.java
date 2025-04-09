@@ -1,5 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.userService;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.UserResponseDTO;
@@ -17,25 +19,28 @@ public class UserService implements IUserService {
     @Autowired
     private UserRepository userRepository;
 
-    /**
-     * Finds a user by ID and returns it as a DTO.
-     *
-     * @param id The ID of the user to find
-     * @return The user DTO
-     * @throws UserNotFoundException if the user is not found
-     */
-    public UserResponseDTO findById(Long id) {
-        return userRepository.findById(id)
-                .map(this::convertToDTO)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    @Override
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 
-    /**
-     * Converts a User entity to a UserResponseDTO.
-     *
-     * @param user The user entity to convert
-     * @return The converted DTO
-     */
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    public UserResponseDTO checkAndFindById(Long id) throws UserNotFoundException {
+        return findById(id)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new UserNotFoundException(id));
+    }   
+
+    public UserResponseDTO checkAndFindByEmail(String email) throws UserNotFoundException {
+        return findByEmail(email)
+                .map(this::convertToDTO)
+                .orElseThrow(() -> new UserNotFoundException(email));
+    }
+
     private UserResponseDTO convertToDTO(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId())

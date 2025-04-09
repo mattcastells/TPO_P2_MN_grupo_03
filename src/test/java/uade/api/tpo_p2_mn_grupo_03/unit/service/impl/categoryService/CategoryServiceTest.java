@@ -75,7 +75,7 @@ class CategoryServiceTest {
 
     @Test
     void create_WhenCategoryDoesNotExist_ShouldCreateNewCategory() {
-        when(categoryRepository.findByName("Test Category")).thenReturn(Optional.empty());
+        when(categoryRepository.findByNameIgnoreCase("Test Category")).thenReturn(Optional.empty());
         when(categoryRepository.save(any(Category.class))).thenReturn(category);
 
         CategoryResponseDTO result = categoryService.create(categoryRequestDTO);
@@ -83,16 +83,16 @@ class CategoryServiceTest {
         assertNotNull(result);
         assertEquals(expectedResponse.getId(), result.getId());
         assertEquals(expectedResponse.getName(), result.getName());
-        verify(categoryRepository).findByName("Test Category");
+        verify(categoryRepository).findByNameIgnoreCase("Test Category");
         verify(categoryRepository).save(any(Category.class));
     }
 
     @Test
     void create_WhenCategoryExists_ShouldThrowDuplicateEntityException() {
-        when(categoryRepository.findByName("Test Category")).thenReturn(Optional.of(category));
+        when(categoryRepository.findByNameIgnoreCase("Test Category")).thenReturn(Optional.of(category));
 
         assertThrows(DuplicateEntityException.class, () -> categoryService.create(categoryRequestDTO));
-        verify(categoryRepository).findByName("Test Category");
+        verify(categoryRepository).findByNameIgnoreCase("Test Category");
         verify(categoryRepository, never()).save(any(Category.class));
     }
 } 
