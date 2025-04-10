@@ -1,5 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,4 +34,10 @@ public class CategoryController {
     public ResponseEntity<CategoryResponseDTO> create(@Valid @RequestBody CategoryRequestDTO categoryRequestDTO) {
         return ResponseEntity.ok(categoryService.create(categoryRequestDTO));
     }
+
+    @GetMapping
+    public ResponseEntity<List<CategoryResponseDTO>> getAllCategories() {
+    return ResponseEntity.ok(categoryService.findAll());
+}
+
 } 

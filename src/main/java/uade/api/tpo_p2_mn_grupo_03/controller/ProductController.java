@@ -1,8 +1,10 @@
 package uade.api.tpo_p2_mn_grupo_03.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -48,7 +50,7 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("price") Double price,
             @RequestParam("stock") Integer stock,
-            @RequestParam("category_id") Long categoryId,
+            @RequestParam("categoryId") Long categoryId,
             @RequestParam("images") List<MultipartFile> images,
             Authentication authentication) {
 
@@ -72,9 +74,29 @@ public class ProductController {
      * @return A list of product DTOs
      */
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity<List<ProductResponseDTO>> getAllProducts(
+            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) Double priceLessThan,
+            @RequestParam(required = false) Double priceGreaterThan,
+            @RequestParam(required = false) Integer stockLessThan,
+            @RequestParam(required = false) Integer stockGreaterThan,
+            @RequestParam(required = false) Long sellerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedAfter,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedBefore,
+            @RequestParam(required = false, defaultValue = "0") int offset,
+            @RequestParam(required = false, defaultValue = "10") int limit
+    ) {
+        List<ProductResponseDTO> products = productService.getFilteredProducts(
+            categories, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
+            sellerId, createdAfter, createdBefore, updatedAfter, updatedBefore,
+            offset, limit
+        );
+        return ResponseEntity.ok(products);
     }
+
+    
 
     /**
      * Retrieves a product by its ID.

@@ -7,6 +7,6 @@ import uade.api.tpo_p2_mn_grupo_03.exception.BadRequestException;
  */
 public class UnauthorizedProductAccessException extends BadRequestException {
     public UnauthorizedProductAccessException(String action) {
-        super("No tienes permisos para " + action + " este producto");
+        super("You do not have permissions to " + action + " this product");
     }
 }

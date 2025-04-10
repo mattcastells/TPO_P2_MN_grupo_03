@@ -5,6 +5,7 @@ import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -50,4 +51,30 @@ public interface IProductService {
      * @param id The ID of the product to delete
      */
     void deleteProduct(Long productId, User user);
+
+    /**
+     * Retrieves products with optional filters and pagination.
+     * Only products with available stock are returned.
+     *
+     * @param categoryNames List of category names to filter by (optional)
+     * @param offset        The starting index for pagination (default is 0)
+     * @param limit         The maximum number of products to return (default is 10)
+     * @return A list of filtered product response DTOs
+     */
+    List<ProductResponseDTO> getFilteredProducts(
+        List<String> categoryNames,
+        Double priceLessThan,
+        Double priceGreaterThan,
+        Integer stockLessThan,
+        Integer stockGreaterThan,
+        Long sellerId,
+        LocalDateTime createdAfter,
+        LocalDateTime createdBefore,
+        LocalDateTime updatedAfter,
+        LocalDateTime updatedBefore,
+        int offset,
+        int limit
+    );
+
+
 }

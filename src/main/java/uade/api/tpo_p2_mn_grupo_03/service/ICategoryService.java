@@ -1,5 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.service;
 
+import java.util.List;
+
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CategoryRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.CategoryResponseDTO;
 
@@ -23,4 +25,7 @@ public interface ICategoryService {
      * @return The created category as a response DTO
      */
     CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO);
+
+    List<CategoryResponseDTO> findAll();
+
 }

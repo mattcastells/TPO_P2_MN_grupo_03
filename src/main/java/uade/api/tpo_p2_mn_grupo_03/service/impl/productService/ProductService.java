@@ -1,5 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.productService;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -133,4 +135,52 @@ public class ProductService implements IProductService {
 
         return ProductMapper.toResponse(product);
     }
+
+    /**
+     * Retrieves products with optional filters and pagination.
+     * Only products with available stock are returned.
+     *
+     * @param categoryNames List of category names to filter by (optional)
+     * @param offset        The starting index for pagination (default is 0)
+     * @param limit         The maximum number of products to return (default is 10)
+     * @return A list of filtered product response DTOs
+     */
+    public List<ProductResponseDTO> getFilteredProducts(
+            List<String> categoryNames,
+            Double priceLessThan,
+            Double priceGreaterThan,
+            Integer stockLessThan,
+            Integer stockGreaterThan,
+            Long sellerId,
+            LocalDateTime createdAfter,
+            LocalDateTime createdBefore,
+            LocalDateTime updatedAfter,
+            LocalDateTime updatedBefore,
+            int offset,
+            int limit
+    ) {
+        List<Product> products;
+
+        if (categoryNames != null && !categoryNames.isEmpty()) {
+            products = productRepository.findByCategory_NameIn(categoryNames);
+        } else {
+            products = productRepository.findAll();
+        }
+
+        return products.stream()
+            .filter(p -> priceLessThan == null || p.getPrice() < priceLessThan)
+            .filter(p -> priceGreaterThan == null || p.getPrice() > priceGreaterThan)
+            .filter(p -> stockLessThan == null || p.getStock() < stockLessThan)
+            .filter(p -> stockGreaterThan == null || p.getStock() > stockGreaterThan)
+            .filter(p -> sellerId == null || p.getSeller().getId().equals(sellerId))
+            .filter(p -> createdAfter == null || p.getCreatedAt().isAfter(createdAfter.atZone(ZoneId.systemDefault()).toInstant()))
+            .filter(p -> createdBefore == null || p.getCreatedAt().isBefore(createdBefore.atZone(ZoneId.systemDefault()).toInstant()))
+            .filter(p -> updatedAfter == null || p.getUpdatedAt().isAfter(updatedAfter.atZone(ZoneId.systemDefault()).toInstant()))
+            .filter(p -> updatedBefore == null || p.getUpdatedAt().isBefore(updatedBefore.atZone(ZoneId.systemDefault()).toInstant()))
+            .skip(offset)
+            .limit(limit)
+            .map(ProductMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
 }
