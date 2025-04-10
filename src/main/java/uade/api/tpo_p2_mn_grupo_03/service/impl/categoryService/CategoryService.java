@@ -52,7 +52,7 @@ public class CategoryService implements ICategoryService {
     @Override
     public CategoryResponseDTO findById(Long id) {
         return categoryRepository.findById(id)
-                .map(this::convertToDTO)
+        .map(categoryMapper::toResponseDTO)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
     
@@ -64,7 +64,7 @@ public class CategoryService implements ICategoryService {
             });
         Category category = new Category(categoryRequestDTO.getName().toLowerCase());
         Category savedCategory = categoryRepository.save(category);
-        return convertToDTO(savedCategory);
+        return categoryMapper.toResponseDTO(savedCategory);
     }
 
     //Encuentra y actualiza el nombre de una categoria si ningun producto la utiliza
@@ -73,12 +73,9 @@ public class CategoryService implements ICategoryService {
     public CategoryResponseDTO update(CategoryPatchRequestDTO categoryPatchRequestDTO){
         Category category = categoryRepository.findById(categoryPatchRequestDTO.getId())
             .orElseThrow(() -> new CategoryNotFoundException(categoryPatchRequestDTO.getId()));
-        if ( categoryIsUsed(category) ) {
-            throw new CategoryIsUsedException();
-        }
         category.setName(categoryPatchRequestDTO.getName());
         categoryRepository.save(category);
-        return convertToDTO(category);
+        return categoryMapper.toResponseDTO(category);
     }
 
     //Encuentra y borra el nombre de una categoría si ningún producto la utiliza
@@ -99,19 +96,5 @@ public class CategoryService implements ICategoryService {
         return !productRepository.findByCategory(category).isEmpty();
     }
 
-    /**
-     * Converts a Category entity to a CategoryResponseDTO.
-     *
-     * @param category The category entity to convert
-     * @return The converted DTO
-     */
-    private CategoryResponseDTO convertToDTO(Category category) {
-        return CategoryResponseDTO.builder()
-                .id(category.getId())
-                .name(category.getName())
-                .createdAt(category.getCreatedAt())
-                .updatedAt(category.getUpdatedAt())
-                .build();
-    }
 
 }
