@@ -59,7 +59,6 @@ public class Order {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.status = status;
-        this.products = new HashSet<>();
     }
 
     @Override
@@ -72,5 +71,11 @@ public class Order {
                 ", updatedAt=" + updatedAt +
                 ", status=" + status +
                 '}';
+    }
+
+    public void calculateTotal() {
+        this.total = products.stream()
+            .mapToDouble(OrderProduct::getSubtotal)
+            .sum();
     }
 } 

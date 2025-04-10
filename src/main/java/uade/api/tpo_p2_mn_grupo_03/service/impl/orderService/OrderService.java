@@ -2,15 +2,26 @@ package uade.api.tpo_p2_mn_grupo_03.service.impl.orderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateOrderRequestDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.request.ProductQuantityDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.Order;
 import uade.api.tpo_p2_mn_grupo_03.model.OrderProduct;
+import uade.api.tpo_p2_mn_grupo_03.model.OrderStatus;
 import uade.api.tpo_p2_mn_grupo_03.repository.OrderRepository;
+import uade.api.tpo_p2_mn_grupo_03.repository.ProductRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.exception.OrderNotFoundException;
+import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.exception.ProductNotEnoughStockException;
+import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.exception.ProductNotFoundException;
 import uade.api.tpo_p2_mn_grupo_03.service.IOrderService;
-
+import uade.api.tpo_p2_mn_grupo_03.model.Product;
+import uade.api.tpo_p2_mn_grupo_03.model.User;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 /**
@@ -20,6 +31,11 @@ import java.util.stream.Collectors;
 public class OrderService implements IOrderService {
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
+
+
     /**
      * Finds an order by ID and returns it as a DTO.
      *
@@ -49,6 +65,7 @@ public class OrderService implements IOrderService {
                 .userId(order.getUser().getId())
                 .total(order.getTotal())
                 .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
                 .status(order.getStatus())
                 .products(productDTOs)
                 .build();
@@ -65,6 +82,68 @@ public class OrderService implements IOrderService {
                 .productId(orderProduct.getProduct().getId())
                 .quantity(orderProduct.getQuantity())
                 .subtotal(orderProduct.getSubtotal())
+                .createdAt(orderProduct.getCreatedAt())
+                .updatedAt(orderProduct.getUpdatedAt())
                 .build();
+    }
+
+    // TODO: refactor in smaller methods
+    public OrderResponseDTO createOrder(CreateOrderRequestDTO createOrderRequestDTO, User user) {
+        Order order = orderRepository
+            .findFirstByUserAndStatus(user, OrderStatus.PENDING)
+            .orElse(new Order());
+        if(order.getProducts() == null) {
+            order.setProducts(new HashSet<>());
+        }
+        Map<Long, ProductQuantityDTO> productQuantitiesMemo = new HashMap<>();
+        createOrderRequestDTO.getProducts().forEach(productQuantity -> {
+            productQuantitiesMemo.put(productQuantity.getProductId(), productQuantity);
+        });
+        order.setUser(user);
+        order.setStatus(OrderStatus.PENDING);
+        List<Product> products = productRepository.findByIdIn(
+            createOrderRequestDTO
+            .getProducts()
+            .stream()
+            .map(ProductQuantityDTO::getProductId)
+            .collect(Collectors.toList()));
+        if(products.size() != createOrderRequestDTO.getProducts().size()) {
+            throw new ProductNotFoundException(
+                createOrderRequestDTO.getProducts()
+                .stream()
+                .map(ProductQuantityDTO::getProductId)
+                .collect(Collectors.toList())
+                .toString()
+                );
+        }
+        for (Product product : products) {
+            ProductQuantityDTO productQuantity = productQuantitiesMemo.get(product.getId());
+            if(productQuantity.getQuantity() > product.getStock()) {
+                throw new ProductNotEnoughStockException(product.getId(), product.getStock());
+            }
+            OrderProduct orderProduct = order.getProducts().stream()
+                .filter(op -> op.getProduct().getId().equals(product.getId()))
+                .findFirst()
+                .map(existingOrderProduct -> {
+                    existingOrderProduct.setQuantity(existingOrderProduct.getQuantity() + productQuantity.getQuantity());
+                    return existingOrderProduct;
+                })
+                .orElseGet(() -> {
+                    OrderProduct newOrderProduct = new OrderProduct();
+                    newOrderProduct.setOrder(order);
+                    newOrderProduct.setProduct(product);
+                    newOrderProduct.setQuantity(productQuantity.getQuantity());
+                    order.getProducts().add(newOrderProduct);
+                    return newOrderProduct;
+                });
+            order.getProducts().add(orderProduct);
+            orderProduct.calculateSubtotal();
+            orderProduct.setOrder(order);
+            product.setStock(product.getStock() - productQuantity.getQuantity());
+            productRepository.save(product);
+        }
+        order.calculateTotal();
+        Order savedOrder = orderRepository.save(order);
+        return convertToDTO(savedOrder);
     }
 } 

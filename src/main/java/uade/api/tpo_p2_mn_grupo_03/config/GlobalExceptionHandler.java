@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,14 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
+        String message = ex.getMessage();        
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(message);
+    }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<String> handleAccessDeniedException(AuthorizationDeniedException ex) {
@@ -69,6 +78,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGenericException(Exception ex) {
+        ex.printStackTrace();
         ErrorResponseDTO response = new ErrorResponseDTO(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
             "Internal Server Error",

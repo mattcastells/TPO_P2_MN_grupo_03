@@ -9,4 +9,8 @@ public class ProductNotFoundException extends NotFoundException {
     public ProductNotFoundException(Long id) {
         super("Product", id);
     }
+
+    public ProductNotFoundException(String identifier) {
+        super("Product", identifier);
+    }
 } 
