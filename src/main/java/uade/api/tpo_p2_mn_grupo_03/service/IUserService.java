@@ -11,4 +11,5 @@ public interface IUserService {
     Optional<User> findByEmail(String email);
     UserResponseDTO checkAndFindById(Long id) throws UserNotFoundException;
     UserResponseDTO checkAndFindByEmail(String email) throws UserNotFoundException;
+    void delete(Long id);
 } 
