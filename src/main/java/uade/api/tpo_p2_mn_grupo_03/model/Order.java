@@ -73,4 +73,10 @@ public class Order {
                 ", status=" + status +
                 '}';
     }
+
+    public void calculateTotal() {
+        this.total = products.stream()
+            .mapToDouble(OrderProduct::getSubtotal)
+            .sum();
+    }
 } 

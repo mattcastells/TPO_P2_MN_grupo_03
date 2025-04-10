@@ -7,6 +7,7 @@ import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.model.OrderStatus;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository interface for Order entity.
@@ -30,4 +31,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
      * @return A list of orders matching both criteria
      */
     List<Order> findByUserAndStatus(User user, OrderStatus status);
+    Optional<Order> findFirstByUserAndStatus(User user, OrderStatus status);
 } 

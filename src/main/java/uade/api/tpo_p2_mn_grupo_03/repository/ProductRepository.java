@@ -14,6 +14,7 @@ import java.util.List;
  */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    List<Product> findByIdIn(List<Long> ids);
     /**
      * Finds all products in a specific category.
      *
