@@ -50,4 +50,9 @@ public class UserService implements IUserService {
                 .role(user.getRole().toString())
                 .build();
     }
+
+    @Override
+    public void delete(Long id) {
+        userRepository.deleteById(id);
+    }
 } 
