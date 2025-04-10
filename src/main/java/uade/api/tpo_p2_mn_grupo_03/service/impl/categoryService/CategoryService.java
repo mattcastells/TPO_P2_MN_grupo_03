@@ -1,5 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.categoryService;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,25 +61,24 @@ public class CategoryService implements ICategoryService {
             .orElseThrow(() -> new CategoryNotFoundException(categoryPatchRequestDTO.getId()));
         if ( categoryIsUsed(category) ) {
             throw new CategoryIsUsedException();
-        } else {
-            category.setName(categoryPatchRequestDTO.getName());
-            categoryRepository.save(category);
-            return convertToDTO(category);
         }
+        category.setName(categoryPatchRequestDTO.getName());
+        categoryRepository.save(category);
+        return convertToDTO(category);
     }
 
     //Encuentra y borra el nombre de una categoría si ningún producto la utiliza
     @Override
     @Transactional
-    public CategoryResponseDTO delete(CategoryRequestDTO categoryRequestDTO) {
-        Category category = categoryRepository.findByName(categoryRequestDTO.getName())
-            .orElseThrow( () -> new CategoryNotFoundException("La categoria '" + categoryRequestDTO.getName() + "' no existe"));
-        if ( categoryIsUsed(category) ) {
-            throw new CategoryIsUsedException();
-        } else {
-            categoryRepository.delete(category);
-            return convertToDTO(category);
+    public void delete(Long id) {
+        Category category = categoryRepository.findById(id).orElse(null);
+        if(category == null) {
+            return;
         }
+        if (categoryIsUsed(category) ) {
+            throw new CategoryIsUsedException();
+        } 
+        categoryRepository.delete(category);
     }
 
     private boolean categoryIsUsed(Category category) {
