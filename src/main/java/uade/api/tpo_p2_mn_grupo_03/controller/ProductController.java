@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
@@ -39,10 +41,27 @@ public class ProductController {
      * @param dto The product data
      * @return The created product DTO
      */
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     @PreAuthorize("hasRole('SELLER')")
-    public ResponseEntity<ProductResponseDTO> create(@Validated @RequestBody CreateProductRequestDTO dto, Authentication authorization) {
-        User user = (User) authorization.getPrincipal();
+    public ResponseEntity<ProductResponseDTO> createProduct(
+            @RequestParam("name") String name,
+            @RequestParam("description") String description,
+            @RequestParam("price") Double price,
+            @RequestParam("stock") Integer stock,
+            @RequestParam("category_id") Long categoryId,
+            @RequestParam("images") List<MultipartFile> images,
+            Authentication authentication) {
+
+        User user = (User) authentication.getPrincipal();
+
+        CreateProductRequestDTO dto = new CreateProductRequestDTO();
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setPrice(price);
+        dto.setStock(stock);
+        dto.setCategoryId(categoryId);
+        dto.setImageFiles(images);
+
         ProductResponseDTO createdProduct = productService.createProduct(dto, user);
         return ResponseEntity.ok(createdProduct);
     }

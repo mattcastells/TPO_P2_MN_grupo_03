@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.util.Set;
+import java.util.List;
 import java.time.Instant;
 
 /**
@@ -22,4 +23,9 @@ public class ProductResponseDTO {
     private Long sellerId;
     private Instant createdAt;
     private Instant updatedAt;
-} 
+
+    /**
+     * Base64-encoded images stored as BLOBs.
+     */
+    private List<String> imagesBase64;
+}

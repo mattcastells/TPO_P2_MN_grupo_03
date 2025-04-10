@@ -11,6 +11,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+
 /**
  * Data Transfer Object for product creation requests.
  */
@@ -60,4 +63,9 @@ public class CreateProductRequestDTO {
     @NotNull(message = "Category ID is required")
     @Positive(message = "Category ID must be a positive number")
     private Long categoryId;
+
+    /**
+     * List of uploaded image files (optional - used when sending multipart/form-data).
+     */
+    private List<MultipartFile> imageFiles;
 }
