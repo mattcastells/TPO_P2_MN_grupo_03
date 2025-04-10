@@ -76,22 +76,18 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<ProductPaginatedResponseDTO> getAllProducts(
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) List<Long> categoryIds,
             @RequestParam(required = false) Double priceLessThan,
             @RequestParam(required = false) Double priceGreaterThan,
             @RequestParam(required = false) Integer stockLessThan,
             @RequestParam(required = false) Integer stockGreaterThan,
             @RequestParam(required = false) Long sellerId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedAfter,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedBefore,
             @RequestParam(required = false, defaultValue = "0") Integer offset,
-            @RequestParam(required = false, defaultValue = "10") Integer limit
+            @RequestParam(required = false, defaultValue = "20") Integer limit
     ) {
         ProductPaginatedResponseDTO products = productService.getFilteredProducts(
-            categories, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
-            sellerId, createdAfter, createdBefore, updatedAfter, updatedBefore,
+            categoryIds, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
+            sellerId,
             offset, limit
         );
         return ResponseEntity.ok(products);
