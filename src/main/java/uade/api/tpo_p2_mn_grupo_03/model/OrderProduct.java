@@ -72,6 +72,7 @@ public class OrderProduct {
                 '}';
     }
     public Double calculateSubtotal() {
-        return product.getPrice() * quantity;
+        this.subtotal = product.getPrice() * quantity;
+        return subtotal;
     }
 } 

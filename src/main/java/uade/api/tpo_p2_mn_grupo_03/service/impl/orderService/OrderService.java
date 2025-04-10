@@ -6,25 +6,19 @@ import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateOrderRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.ProductQuantityDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderResponseDTO;
-import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.Order;
 import uade.api.tpo_p2_mn_grupo_03.model.OrderProduct;
 import uade.api.tpo_p2_mn_grupo_03.model.OrderStatus;
 import uade.api.tpo_p2_mn_grupo_03.repository.OrderRepository;
 import uade.api.tpo_p2_mn_grupo_03.repository.ProductRepository;
-import uade.api.tpo_p2_mn_grupo_03.repository.UserRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.exception.OrderNotFoundException;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.exception.ProductNotEnoughStockException;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.productService.exception.ProductNotFoundException;
 import uade.api.tpo_p2_mn_grupo_03.service.IOrderService;
-import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
 import uade.api.tpo_p2_mn_grupo_03.model.Product;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
-import uade.api.tpo_p2_mn_grupo_03.service.impl.orderService.exception.DuplicatedPendingOrderException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +65,7 @@ public class OrderService implements IOrderService {
                 .userId(order.getUser().getId())
                 .total(order.getTotal())
                 .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
                 .status(order.getStatus())
                 .products(productDTOs)
                 .build();
@@ -87,6 +82,8 @@ public class OrderService implements IOrderService {
                 .productId(orderProduct.getProduct().getId())
                 .quantity(orderProduct.getQuantity())
                 .subtotal(orderProduct.getSubtotal())
+                .createdAt(orderProduct.getCreatedAt())
+                .updatedAt(orderProduct.getUpdatedAt())
                 .build();
     }
 
@@ -95,14 +92,15 @@ public class OrderService implements IOrderService {
         Order order = orderRepository
             .findFirstByUserAndStatus(user, OrderStatus.PENDING)
             .orElse(new Order());
-
+        if(order.getProducts() == null) {
+            order.setProducts(new HashSet<>());
+        }
         Map<Long, ProductQuantityDTO> productQuantitiesMemo = new HashMap<>();
         createOrderRequestDTO.getProducts().forEach(productQuantity -> {
             productQuantitiesMemo.put(productQuantity.getProductId(), productQuantity);
         });
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
-        order.setProducts(new HashSet<>());
         List<Product> products = productRepository.findByIdIn(
             createOrderRequestDTO
             .getProducts()
@@ -138,7 +136,9 @@ public class OrderService implements IOrderService {
                     order.getProducts().add(newOrderProduct);
                     return newOrderProduct;
                 });
+            order.getProducts().add(orderProduct);
             orderProduct.calculateSubtotal();
+            orderProduct.setOrder(order);
             product.setStock(product.getStock() - productQuantity.getQuantity());
             productRepository.save(product);
         }

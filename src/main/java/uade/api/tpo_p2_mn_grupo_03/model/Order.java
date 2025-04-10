@@ -59,7 +59,6 @@ public class Order {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.status = status;
-        this.products = new HashSet<>();
     }
 
     @Override
