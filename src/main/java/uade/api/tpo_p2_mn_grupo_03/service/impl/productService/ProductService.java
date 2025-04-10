@@ -7,6 +7,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
@@ -151,27 +155,34 @@ public class ProductService implements IProductService {
      * @return A list of filtered product response DTOs
      */
     public ProductPaginatedResponseDTO getFilteredProducts(
-            List<String> categoryNames,
+            List<Long> categoryIds,
             Double priceLessThan,
             Double priceGreaterThan,
             Integer stockLessThan,
             Integer stockGreaterThan,
             Long sellerId,
-            LocalDateTime createdAfter,
-            LocalDateTime createdBefore,
-            LocalDateTime updatedAfter,
-            LocalDateTime updatedBefore,
             int offset,
             int limit
     ) {
-        List<Product> products = productRepository.findByStockGreaterThan(0);
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        
+        Page<Product> page = productRepository.findWithFilters(
+            categoryIds,
+            priceLessThan,
+            priceGreaterThan,
+            stockLessThan,
+            stockGreaterThan,
+            sellerId,
+            pageable
+        );
+
         return new ProductPaginatedResponseDTO(
             Set.of(),
             Set.of(),
-            products.size(),
+            (int) page.getTotalElements(),
             offset,
             limit,
-            products.stream().skip(offset).limit(limit).map(ProductMapper::toResponse).collect(Collectors.toList())
+            page.getContent().stream().map(ProductMapper::toResponse).collect(Collectors.toList())
         );
     }
 }

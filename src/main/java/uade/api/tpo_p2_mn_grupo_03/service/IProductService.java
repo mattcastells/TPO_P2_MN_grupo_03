@@ -63,16 +63,12 @@ public interface IProductService {
      * @return A list of filtered product response DTOs
      */
     ProductPaginatedResponseDTO getFilteredProducts(
-        List<String> categoryNames,
+        List<Long> categoryIds,
         Double priceLessThan,
         Double priceGreaterThan,
         Integer stockLessThan,
         Integer stockGreaterThan,
         Long sellerId,
-        LocalDateTime createdAfter,
-        LocalDateTime createdBefore,
-        LocalDateTime updatedAfter,
-        LocalDateTime updatedBefore,
         int offset,
         int limit
     );

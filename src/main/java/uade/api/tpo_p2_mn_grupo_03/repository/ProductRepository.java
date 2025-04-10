@@ -1,10 +1,14 @@
 package uade.api.tpo_p2_mn_grupo_03.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uade.api.tpo_p2_mn_grupo_03.model.Product;
 import uade.api.tpo_p2_mn_grupo_03.model.Category;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -62,5 +66,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      */
     List<Product> findByCategory_NameIn(List<String> categoryNames);
     List<Product> findByPriceBetweenAndCategoryId(Double minPrice, Double maxPrice, Long categoryId);
+
+    @Query("SELECT p FROM Product p WHERE " +
+           "(:categoryIds IS NULL OR p.category.id IN :categoryIds) AND " +
+           "(:priceLessThan IS NULL OR p.price <= :priceLessThan) AND " +
+           "(:priceGreaterThan IS NULL OR p.price > :priceGreaterThan) AND " +
+           "(:stockLessThan IS NULL OR p.stock < :stockLessThan) AND " +
+           "(:stockGreaterThan IS NULL OR p.stock > :stockGreaterThan) AND " +
+           "(:sellerId IS NULL OR p.seller.id = :sellerId)")
+    Page<Product> findWithFilters(
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("priceLessThan") Double priceLessThan,
+            @Param("priceGreaterThan") Double priceGreaterThan,
+            @Param("stockLessThan") Integer stockLessThan,
+            @Param("stockGreaterThan") Integer stockGreaterThan,
+            @Param("sellerId") Long sellerId,
+            Pageable pageable
+    );
 
 } 
