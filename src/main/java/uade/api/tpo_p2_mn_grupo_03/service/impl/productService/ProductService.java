@@ -172,7 +172,6 @@ public class ProductService implements IProductService {
             offset,
             limit,
             products.stream().skip(offset).limit(limit).map(ProductMapper::toResponse).collect(Collectors.toList())
-
         );
     }
 }
