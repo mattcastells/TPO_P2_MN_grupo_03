@@ -1,6 +1,7 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.categoryService;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import uade.api.tpo_p2_mn_grupo_03.dto.request.CategoryPatchRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CategoryRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.CategoryResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.exception.DuplicateEntityException;
+import uade.api.tpo_p2_mn_grupo_03.mapper.CategoryMapper;
 import uade.api.tpo_p2_mn_grupo_03.model.Category;
 import uade.api.tpo_p2_mn_grupo_03.repository.CategoryRepository;
 import uade.api.tpo_p2_mn_grupo_03.repository.ProductRepository;
@@ -22,11 +24,23 @@ import uade.api.tpo_p2_mn_grupo_03.service.impl.categoryService.exception.Catego
  */
 @Service
 public class CategoryService implements ICategoryService {
+
     @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
+    private CategoryMapper categoryMapper;
+
+    @Autowired
     private ProductRepository productRepository;
+    
+    @Override
+    public List<CategoryResponseDTO> findAll() {
+        return categoryRepository.findAll()
+            .stream()
+            .map(categoryMapper::toResponseDTO)
+            .collect(Collectors.toList());
+    }
 
     /**
      * Finds a category by ID and returns it as a DTO.
@@ -41,7 +55,7 @@ public class CategoryService implements ICategoryService {
                 .map(this::convertToDTO)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
-
+    
     @Override
     public CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO) {
         categoryRepository.findByNameIgnoreCase(categoryRequestDTO.getName())
@@ -100,4 +114,4 @@ public class CategoryService implements ICategoryService {
                 .build();
     }
 
-} 
+}

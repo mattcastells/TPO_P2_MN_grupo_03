@@ -52,4 +52,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return A list of products within the price range
      */
     List<Product> findByPriceGreaterThanEqual(Double price);
+
+    /**
+     * Finds all products that belong to any of the given category names.
+     *
+     * @param categoryNames The list of category names to filter by
+     * @return A list of products belonging to the specified categories
+     */
+    List<Product> findByCategory_NameIn(List<String> categoryNames);
+    List<Product> findByPriceBetweenAndCategoryId(Double minPrice, Double maxPrice, Long categoryId);
+
 } 
