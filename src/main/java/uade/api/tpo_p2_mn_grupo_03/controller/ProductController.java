@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductPaginatedResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
@@ -74,7 +75,7 @@ public class ProductController {
      * @return A list of product DTOs
      */
     @GetMapping
-    public ResponseEntity<List<ProductResponseDTO>> getAllProducts(
+    public ResponseEntity<ProductPaginatedResponseDTO> getAllProducts(
             @RequestParam(required = false) List<String> categories,
             @RequestParam(required = false) Double priceLessThan,
             @RequestParam(required = false) Double priceGreaterThan,
@@ -88,7 +89,7 @@ public class ProductController {
             @RequestParam(required = false, defaultValue = "0") Integer offset,
             @RequestParam(required = false, defaultValue = "10") Integer limit
     ) {
-        List<ProductResponseDTO> products = productService.getFilteredProducts(
+        ProductPaginatedResponseDTO products = productService.getFilteredProducts(
             categories, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
             sellerId, createdAfter, createdBefore, updatedAfter, updatedBefore,
             offset, limit

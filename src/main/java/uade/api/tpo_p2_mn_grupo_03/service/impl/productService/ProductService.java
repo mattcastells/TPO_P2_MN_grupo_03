@@ -3,6 +3,7 @@ package uade.api.tpo_p2_mn_grupo_03.service.impl.productService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.CategoryResponseDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductPaginatedResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.mapper.ProductMapper;
 import uade.api.tpo_p2_mn_grupo_03.model.Category;
@@ -111,8 +113,11 @@ public class ProductService implements IProductService {
      */
     @Override
     public void deleteProduct(Long productId, User user) {
-        Product product = productRepository.findById(productId)
-            .orElseThrow(() -> new ProductNotFoundException(productId));
+        Product product = productRepository.findById(productId).orElse(null);
+
+        if (product == null) {
+            return;
+        }
 
         if (!product.getSeller().getId().equals(user.getId())) {
             throw new UnauthorizedProductAccessException("delete");
@@ -145,7 +150,7 @@ public class ProductService implements IProductService {
      * @param limit         The maximum number of products to return (default is 10)
      * @return A list of filtered product response DTOs
      */
-    public List<ProductResponseDTO> getFilteredProducts(
+    public ProductPaginatedResponseDTO getFilteredProducts(
             List<String> categoryNames,
             Double priceLessThan,
             Double priceGreaterThan,
@@ -159,28 +164,15 @@ public class ProductService implements IProductService {
             int offset,
             int limit
     ) {
-        List<Product> products;
+        List<Product> products = productRepository.findByStockGreaterThan(0);
+        return new ProductPaginatedResponseDTO(
+            Set.of(),
+            Set.of(),
+            products.size(),
+            offset,
+            limit,
+            products.stream().skip(offset).limit(limit).map(ProductMapper::toResponse).collect(Collectors.toList())
 
-        if (categoryNames != null && !categoryNames.isEmpty()) {
-            products = productRepository.findByCategory_NameIn(categoryNames);
-        } else {
-            products = productRepository.findAll();
-        }
-
-        return products.stream()
-            .filter(p -> priceLessThan == null || p.getPrice() < priceLessThan)
-            .filter(p -> priceGreaterThan == null || p.getPrice() > priceGreaterThan)
-            .filter(p -> stockLessThan == null || p.getStock() < stockLessThan)
-            .filter(p -> stockGreaterThan == null || p.getStock() > stockGreaterThan)
-            .filter(p -> sellerId == null || p.getSeller().getId().equals(sellerId))
-            .filter(p -> createdAfter == null || p.getCreatedAt().isAfter(createdAfter.atZone(ZoneId.systemDefault()).toInstant()))
-            .filter(p -> createdBefore == null || p.getCreatedAt().isBefore(createdBefore.atZone(ZoneId.systemDefault()).toInstant()))
-            .filter(p -> updatedAfter == null || p.getUpdatedAt().isAfter(updatedAfter.atZone(ZoneId.systemDefault()).toInstant()))
-            .filter(p -> updatedBefore == null || p.getUpdatedAt().isBefore(updatedBefore.atZone(ZoneId.systemDefault()).toInstant()))
-            .skip(offset)
-            .limit(limit)
-            .map(ProductMapper::toResponse)
-            .collect(Collectors.toList());
+        );
     }
-
 }

@@ -2,6 +2,7 @@ package uade.api.tpo_p2_mn_grupo_03.service;
 
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductPaginatedResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 
@@ -61,7 +62,7 @@ public interface IProductService {
      * @param limit         The maximum number of products to return (default is 10)
      * @return A list of filtered product response DTOs
      */
-    List<ProductResponseDTO> getFilteredProducts(
+    ProductPaginatedResponseDTO getFilteredProducts(
         List<String> categoryNames,
         Double priceLessThan,
         Double priceGreaterThan,
