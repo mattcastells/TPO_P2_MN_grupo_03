@@ -85,8 +85,8 @@ public class ProductController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedAfter,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedBefore,
-            @RequestParam(required = false, defaultValue = "0") int offset,
-            @RequestParam(required = false, defaultValue = "10") int limit
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "10") Integer limit
     ) {
         List<ProductResponseDTO> products = productService.getFilteredProducts(
             categories, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
@@ -95,8 +95,6 @@ public class ProductController {
         );
         return ResponseEntity.ok(products);
     }
-
-    
 
     /**
      * Retrieves a product by its ID.
