@@ -76,10 +76,13 @@ public class ProductController {
      * @return The updated product DTO
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
-            @RequestBody UpdateProductRequestDTO dto) {
-        return ResponseEntity.ok(productService.updateProduct(id, dto));
+            @RequestBody UpdateProductRequestDTO dto,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(productService.updateProduct(id, dto, user));
     }
 
     /**
@@ -89,8 +92,11 @@ public class ProductController {
      * @return 204 No Content
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+    @PreAuthorize("hasRole('SELLER')")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id, Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        productService.deleteProduct(id, user);
         return ResponseEntity.noContent().build();
     }
+    
 }
