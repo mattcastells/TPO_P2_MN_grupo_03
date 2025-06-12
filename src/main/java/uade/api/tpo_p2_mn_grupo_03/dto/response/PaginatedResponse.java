@@ -1,10 +1,12 @@
 package uade.api.tpo_p2_mn_grupo_03.dto.response;
 
-import java.util.Set;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import uade.api.tpo_p2_mn_grupo_03.dto.filter.AppliedFilterDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.filter.AvailableFilterDTO;
 
 /**
  * Base class for paginated responses.
@@ -13,8 +15,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class PaginatedResponse<T> {
-    private final Set<String> availableFilters;
-    private final Set<String> appliedFilters;
+    private final List<AvailableFilterDTO> availableFilters;
+    private final List<AppliedFilterDTO> appliedFilters;
     private final int totalResults;
     private final int offset;
     private final int limit;
@@ -22,8 +24,8 @@ public abstract class PaginatedResponse<T> {
     private final List<T> results;
 
     protected PaginatedResponse(
-        Set<String> availableFilters,
-        Set<String> appliedFilters,
+        List<AvailableFilterDTO> availableFilters,
+        List<AppliedFilterDTO> appliedFilters,
         Integer totalResults,
         Integer offset,
         Integer limit,
@@ -36,5 +38,4 @@ public abstract class PaginatedResponse<T> {
         this.limit = limit;
         this.results = results;
     }
-
 } 
