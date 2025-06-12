@@ -69,9 +69,11 @@ public interface IProductService {
         Integer stockLessThan,
         Integer stockGreaterThan,
         Long sellerId,
-        int offset,
-        int limit
+        String name,
+        Integer offset,
+        Integer limit
     );
 
+    byte[] getProductImage(Long productId, Long imageId);
 
 }

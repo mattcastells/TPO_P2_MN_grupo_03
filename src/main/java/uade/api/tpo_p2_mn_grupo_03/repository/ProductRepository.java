@@ -11,6 +11,8 @@ import uade.api.tpo_p2_mn_grupo_03.model.User;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Repository interface for Product entity.
@@ -73,7 +75,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "(:priceGreaterThan IS NULL OR p.price > :priceGreaterThan) AND " +
            "(:stockLessThan IS NULL OR p.stock < :stockLessThan) AND " +
            "(:stockGreaterThan IS NULL OR p.stock > :stockGreaterThan) AND " +
-           "(:sellerId IS NULL OR p.seller.id = :sellerId)")
+           "(:sellerId IS NULL OR p.seller.id = :sellerId) AND " +
+           "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')))")
     Page<Product> findWithFilters(
             @Param("categoryIds") List<Long> categoryIds,
             @Param("priceLessThan") Double priceLessThan,
@@ -81,7 +84,37 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             @Param("stockLessThan") Integer stockLessThan,
             @Param("stockGreaterThan") Integer stockGreaterThan,
             @Param("sellerId") Long sellerId,
+            @Param("name") String name,
             Pageable pageable
     );
 
+    @Query("SELECT new map(" +
+           "MIN(p.price) as priceGreaterThan, " +
+           "MAX(p.price) as priceLessThan, " +
+           "MIN(p.stock) as stockGreaterThan, " +
+           "MAX(p.stock) as stockLessThan, " +
+           "GROUP_CONCAT(DISTINCT CAST(p.category.id AS string)) as categoryIds, " +
+           "GROUP_CONCAT(DISTINCT CAST(p.seller.id AS string)) as sellerId, " +
+           "GROUP_CONCAT(DISTINCT CAST(p.name AS string)) as name) " +
+           "FROM Product p " +
+           "WHERE " +
+           "(:categoryIds IS NULL OR p.category.id IN :categoryIds) AND " +
+           "(:priceLessThan IS NULL OR p.price <= :priceLessThan) AND " +
+           "(:priceGreaterThan IS NULL OR p.price > :priceGreaterThan) AND " +
+           "(:stockLessThan IS NULL OR p.stock < :stockLessThan) AND " +
+           "(:stockGreaterThan IS NULL OR p.stock > :stockGreaterThan) AND " +
+           "(:sellerId IS NULL OR p.seller.id = :sellerId) AND " +
+           "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')))")
+    Map<String, Object> findAvailableFilterValues(
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("priceLessThan") Double priceLessThan,
+            @Param("priceGreaterThan") Double priceGreaterThan,
+            @Param("stockLessThan") Integer stockLessThan,
+            @Param("stockGreaterThan") Integer stockGreaterThan,
+            @Param("sellerId") Long sellerId,
+            @Param("name") String name
+    );
+
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.details WHERE p.id = :id")
+    Optional<Product> findByIdWithDetails(@Param("id") Long id);
 } 

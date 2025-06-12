@@ -1,5 +1,6 @@
 package uade.api.tpo_p2_mn_grupo_03.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +14,6 @@ import uade.api.tpo_p2_mn_grupo_03.model.Category;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<Category> findByNameIgnoreCase(String name);
+    List<Category> findByParentIdIn(List<Long> parentIds);
+    List<Category> findAllByParentIdIn(List<Long> parentIds);
 }

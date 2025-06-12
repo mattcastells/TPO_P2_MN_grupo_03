@@ -9,6 +9,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import jakarta.validation.ConstraintViolationException;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ErrorResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ValidationErrorResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ValidationExceptionResponseDTO;
@@ -42,6 +44,24 @@ public class GlobalExceptionHandler {
             "Bad Request",
             "malformed JSON request",
             "INVALID_JSON"
+        );
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ValidationExceptionResponseDTO> handleValidationExceptions(ConstraintViolationException ex) {
+        ValidationExceptionResponseDTO response = new ValidationExceptionResponseDTO(
+            HttpStatus.BAD_REQUEST.value(),
+            HttpStatus.BAD_REQUEST.getReasonPhrase(),
+            "Error de validación",
+            "VALIDATION_ERROR",
+            ex.getConstraintViolations().stream()
+                .map(error -> {
+                    String fieldName = error.getPropertyPath().toString();
+                    String errorMessage = error.getMessage();
+                    return new ValidationErrorResponseDTO(fieldName, errorMessage);
+                })
+                .collect(Collectors.toList())
         );
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }

@@ -50,6 +50,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Order> orders;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private UserAddress address;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private Instant createdAt;

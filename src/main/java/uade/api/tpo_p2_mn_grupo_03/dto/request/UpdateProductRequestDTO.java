@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.Set;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+
 /**
  * Data Transfer Object for product update requests.
  */
@@ -36,7 +40,7 @@ public class UpdateProductRequestDTO {
     /**
      * A set of updated image URLs for the product.
      */
-    private Set<String> images;
+    private List<MultipartFile> imageFiles;
 
     /**
      * The ID of the updated category.
@@ -47,4 +51,9 @@ public class UpdateProductRequestDTO {
      * The ID of the updated seller.
      */
     private Long sellerId;
+
+    /**
+     * The updated list of product details.
+     */
+    private List<ProductDetailDTO> details;
 }

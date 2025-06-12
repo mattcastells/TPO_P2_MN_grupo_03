@@ -51,13 +51,6 @@ public class CreateProductRequestDTO {
     private Integer stock;
 
     /**
-     * A set of image URLs for the product.
-     */
-    @NotNull(message = "Images set cannot be null")
-    @Size(min = 1, message = "At least one image is required")
-    private Set<@NotBlank(message = "Image URL cannot be blank") String>  images;
-
-    /**
      * The ID of the category this product belongs to.
      */
     @NotNull(message = "Category ID is required")
@@ -65,7 +58,19 @@ public class CreateProductRequestDTO {
     private Long categoryId;
 
     /**
+     * A set of image URLs for the product.
+     */
+    @NotNull(message = "Images set cannot be null")
+    @Size(min = 1, message = "At least one image is required")
+    private Set<@NotBlank(message = "Image URL cannot be blank") String>  images;
+
+    /**
      * List of uploaded image files (optional - used when sending multipart/form-data).
      */
     private List<MultipartFile> imageFiles;
+
+    /**
+     * List of product details.
+     */
+    private List<ProductDetailDTO> details;
 }
