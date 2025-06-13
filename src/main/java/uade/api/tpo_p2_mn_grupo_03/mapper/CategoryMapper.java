@@ -11,6 +11,7 @@ public class CategoryMapper {
         return CategoryResponseDTO.builder()
                 .id(category.getId())
                 .name(category.getName())
+                .parentId(category.getParent() != null ? category.getParent().getId() : null)
                 .createdAt(category.getCreatedAt())
                 .updatedAt(category.getUpdatedAt())
                 .build();

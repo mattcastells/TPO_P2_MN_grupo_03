@@ -1,0 +1,26 @@
+services:
+  mysql-dev:
+    container_name: mysql-dev
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=ecommerce
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+    command: >
+      --default-authentication-plugin=caching_sha2_password
+      --bind-address=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "admin", "-p", "admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  mysql_data:
+

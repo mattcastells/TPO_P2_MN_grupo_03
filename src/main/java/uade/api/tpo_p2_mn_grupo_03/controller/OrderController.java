@@ -9,11 +9,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateOrderRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.OrderResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.service.IOrderService;
+
+import java.util.List;
 
 /**
  * Controller for order operations.
@@ -42,5 +45,15 @@ public class OrderController {
             Authentication authentication) {
                 User user = (User) authentication.getPrincipal();
         return ResponseEntity.ok(orderService.createOrder(orderRequestDTO, user));
+    }
+
+    @GetMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<OrderResponseDTO>> getMyOrders(
+            @RequestParam(required = false, defaultValue = "0") Integer offset,
+            @RequestParam(required = false, defaultValue = "20") Integer limit,
+            Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(orderService.findByUserId(user.getId(), offset, limit));
     }
 } 

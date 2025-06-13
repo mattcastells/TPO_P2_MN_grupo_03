@@ -12,6 +12,8 @@ import java.time.Instant;
 public class OrderProductResponseDTO {
     private Long productId;
     private Integer quantity;
+    private String name;
+    private Double price;
     private Double subtotal;
     private Instant createdAt;
     private Instant updatedAt;

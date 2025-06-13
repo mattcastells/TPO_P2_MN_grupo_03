@@ -29,46 +29,19 @@ src/
 │       └── application-prod.properties
 ```
 
-## Modelo de Datos
+## Pasos para el Setup del Proyecto
 
-### User
-- id: Long
-- username: String
-- email: String
-- password: String
-- firstName: String
-- lastName: String
-- role: Enum (BUYER, SELLER)
-- products: List<Product> (OneToMany)
-- orders: List<Order> (OneToMany)
+1. **Levantar la base de datos con Docker Compose**
+   - Abrí una terminal y navega a la carpeta `dev-db`:
+     ```
+     cd dev-db
+     ```
+   - Ejecutá el siguiente comando para levantar los contenedores de la base de datos:
+     ```
+     docker compose up
+     ```
 
-### Product
-- id: Long
-- name: String
-- description: String
-- price: Double
-- stock: Integer
-- images: List<String>
-- category: Category (ManyToOne)
-- seller: User (ManyToOne)
-- orderProducts: List<OrderProduct> (OneToMany)
+2. **Levantar el backend con Spring Boot**
+   - Abrí la extensión de Spring Boot en tu IDE (por ejemplo, VS Code o IntelliJ).
+   - Seleccioná la opción **Run with profile** y elegí el perfil `dev` para correr la aplicación en modo desarrollo.
 
-### Category
-- id: Long
-- name: String
-- products: List<Product> (OneToMany)
-
-### Order
-- id: Long
-- user: User (ManyToOne)
-- products: List<OrderProduct> (OneToMany)
-- total: Double
-- date: LocalDateTime
-- status: Enum (CART, PENDING, COMPLETED, CANCELLED)
-
-### OrderProduct
-- id: Long
-- order: Order (ManyToOne)
-- product: Product (ManyToOne)
-- quantity: Integer
-- subtotal: Double

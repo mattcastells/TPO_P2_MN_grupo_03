@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,13 +12,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.request.ProductDetailDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductPaginatedResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
@@ -38,6 +40,9 @@ public class ProductController {
     @Autowired
     private IProductService productService;
 
+    @Autowired
+    private ObjectMapper mapper;
+
     /**
      * Creates a new product.
      *
@@ -51,8 +56,9 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("price") Double price,
             @RequestParam("stock") Integer stock,
-            @RequestParam("categoryId") Long categoryId,
+            @RequestParam("category_id") Long categoryId,
             @RequestParam("images") List<MultipartFile> images,
+            @RequestParam(value = "details", required = false) String detailsJson,
             Authentication authentication) {
 
         User user = (User) authentication.getPrincipal();
@@ -65,6 +71,15 @@ public class ProductController {
         dto.setCategoryId(categoryId);
         dto.setImageFiles(images);
 
+        if (detailsJson != null && !detailsJson.isEmpty()) {
+            try {
+                List<ProductDetailDTO> details = mapper.readValue(detailsJson, 
+                    mapper.getTypeFactory().constructCollectionType(List.class, ProductDetailDTO.class));
+                dto.setDetails(details);
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing details JSON", e);
+            }
+        }
         ProductResponseDTO createdProduct = productService.createProduct(dto, user);
         return ResponseEntity.ok(createdProduct);
     }
@@ -76,23 +91,19 @@ public class ProductController {
      */
     @GetMapping
     public ResponseEntity<ProductPaginatedResponseDTO> getAllProducts(
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) List<Long> categoryIds,
             @RequestParam(required = false) Double priceLessThan,
             @RequestParam(required = false) Double priceGreaterThan,
             @RequestParam(required = false) Integer stockLessThan,
             @RequestParam(required = false) Integer stockGreaterThan,
             @RequestParam(required = false) Long sellerId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedAfter,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime updatedBefore,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false, defaultValue = "0") Integer offset,
-            @RequestParam(required = false, defaultValue = "10") Integer limit
+            @RequestParam(required = false, defaultValue = "20") Integer limit
     ) {
         ProductPaginatedResponseDTO products = productService.getFilteredProducts(
-            categories, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
-            sellerId, createdAfter, createdBefore, updatedAfter, updatedBefore,
-            offset, limit
+            categoryIds, priceLessThan, priceGreaterThan, stockLessThan, stockGreaterThan,
+            sellerId, name, offset, limit
         );
         return ResponseEntity.ok(products);
     }
@@ -119,9 +130,32 @@ public class ProductController {
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ProductResponseDTO> updateProduct(
             @PathVariable Long id,
-            @RequestBody UpdateProductRequestDTO dto,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) Double price,
+            @RequestParam(required = false) Integer stock,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) List<MultipartFile> images,
+            @RequestParam(value = "details", required = false) String detailsJson,
             Authentication authentication) {
         User user = (User) authentication.getPrincipal();
+        UpdateProductRequestDTO dto = new UpdateProductRequestDTO();
+        dto.setName(name);
+        dto.setDescription(description);
+        dto.setPrice(price);
+        dto.setStock(stock);
+        dto.setCategoryId(categoryId);
+        dto.setImageFiles(images);
+
+        if (detailsJson != null && !detailsJson.isEmpty()) {
+            try {
+                List<ProductDetailDTO> details = mapper.readValue(detailsJson, 
+                    mapper.getTypeFactory().constructCollectionType(List.class, ProductDetailDTO.class));
+                dto.setDetails(details);
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing details JSON", e);
+            }
+        }
         return ResponseEntity.ok(productService.updateProduct(id, dto, user));
     }
 
@@ -138,5 +172,21 @@ public class ProductController {
         productService.deleteProduct(id, user);
         return ResponseEntity.noContent().build();
     }
-    
+
+    /**
+     * Retrieves a product image by its ID.
+     *
+     * @param productId The ID of the product
+     * @param imageId The ID of the image
+     * @return The image data
+     */
+    @GetMapping("/{productId}/image/{imageId}")
+    public ResponseEntity<byte[]> getProductImage(
+            @PathVariable Long productId,
+            @PathVariable Long imageId) {
+        byte[] imageData = productService.getProductImage(productId, imageId);
+        return ResponseEntity.ok()
+            .contentType(MediaType.IMAGE_JPEG)
+            .body(imageData);
+    }
 }

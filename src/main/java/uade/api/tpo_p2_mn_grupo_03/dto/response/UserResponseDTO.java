@@ -18,4 +18,5 @@ public class UserResponseDTO {
     private String role;
     private Instant createdAt;
     private Instant updatedAt;
+    private UserAddressDTO address;
 } 

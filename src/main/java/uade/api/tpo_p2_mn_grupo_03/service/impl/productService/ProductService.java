@@ -1,12 +1,21 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.productService;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateProductRequestDTO;
@@ -14,10 +23,15 @@ import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdateProductRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.CategoryResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductPaginatedResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.ProductResponseDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.filter.AppliedFilterDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.filter.AvailableFilterDTO;
 import uade.api.tpo_p2_mn_grupo_03.mapper.ProductMapper;
 import uade.api.tpo_p2_mn_grupo_03.model.Category;
 import uade.api.tpo_p2_mn_grupo_03.model.Product;
+import uade.api.tpo_p2_mn_grupo_03.model.ProductDetail;
+import uade.api.tpo_p2_mn_grupo_03.model.ProductImage;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
+import uade.api.tpo_p2_mn_grupo_03.repository.ProductDetailRepository;
 import uade.api.tpo_p2_mn_grupo_03.repository.ProductRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.IProductService;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.categoryService.CategoryService;
@@ -36,6 +50,12 @@ public class ProductService implements IProductService {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private ProductDetailRepository productDetailRepository;
+
+    @Autowired
+    private ProductMapper productMapper;
+
     /**
      * Creates a new product and persists it.
      *
@@ -49,12 +69,20 @@ public class ProductService implements IProductService {
         CategoryResponseDTO categoryDTO = categoryService.findById(dto.getCategoryId());
         Category category = new Category();
         category.setId(categoryDTO.getId());
-
         // Map DTO to entity and persist
-        Product product = ProductMapper.toEntity(dto, category, user);
+        Product product = productMapper.toEntity(dto, category, user);
+        product.setDetails(dto.getDetails().stream()
+            .map(detailDTO -> {
+                ProductDetail detail = new ProductDetail();
+                detail.setName(detailDTO.getName());
+                detail.setDescription(detailDTO.getDescription());
+                detail.setProduct(product);
+                return detail;
+            }).collect(Collectors.toList()));
+        
         Product savedProduct = productRepository.save(product);
 
-        return ProductMapper.toResponse(savedProduct);
+        return productMapper.toResponse(savedProduct);
     }
 
     /**
@@ -65,7 +93,7 @@ public class ProductService implements IProductService {
     @Override
     public List<ProductResponseDTO> getAllProducts() {
         return productRepository.findAll().stream()
-            .map(ProductMapper::toResponse)
+            .map(productMapper::toResponse)
             .collect(Collectors.toList());
     }
 
@@ -97,10 +125,10 @@ public class ProductService implements IProductService {
         }
 
         // Apply changes
-        ProductMapper.updateEntity(product, dto, updatedCategory);
+        product = productMapper.updateEntity(product, dto, updatedCategory, user);
 
         Product updated = productRepository.save(product);
-        return ProductMapper.toResponse(updated);
+        return productMapper.toResponse(updated, true);
     }
 
     /**
@@ -125,7 +153,6 @@ public class ProductService implements IProductService {
 
         productRepository.delete(product);
     }
-
     /**
      * Finds a product by ID and returns it as a response DTO.
      *
@@ -135,10 +162,10 @@ public class ProductService implements IProductService {
      */
     @Override
     public ProductResponseDTO findById(Long productId) {
-        Product product = productRepository.findById(productId)
+        Product product = productRepository.findByIdWithDetails(productId)
             .orElseThrow(() -> new ProductNotFoundException(productId));
 
-        return ProductMapper.toResponse(product);
+        return productMapper.toResponse(product, true);
     }
 
     /**
@@ -151,27 +178,87 @@ public class ProductService implements IProductService {
      * @return A list of filtered product response DTOs
      */
     public ProductPaginatedResponseDTO getFilteredProducts(
-            List<String> categoryNames,
+            List<Long> categoryIds,
             Double priceLessThan,
             Double priceGreaterThan,
             Integer stockLessThan,
             Integer stockGreaterThan,
             Long sellerId,
-            LocalDateTime createdAfter,
-            LocalDateTime createdBefore,
-            LocalDateTime updatedAfter,
-            LocalDateTime updatedBefore,
-            int offset,
-            int limit
+            String name,
+            Integer offset,
+            Integer limit
     ) {
-        List<Product> products = productRepository.findByStockGreaterThan(0);
+        if(stockGreaterThan == null || (stockGreaterThan != null && stockGreaterThan <= 0)) {
+            stockGreaterThan = 1;
+        }
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        
+        Page<Product> page = productRepository.findWithFilters(
+            categoryIds,
+            priceLessThan,
+            priceGreaterThan,
+            stockLessThan,
+            stockGreaterThan,
+            sellerId,
+            name,
+            pageable
+        );
+        Map<String, Object> availableFiltersMap = productRepository.findAvailableFilterValues(
+            categoryIds,
+            priceLessThan,
+            priceGreaterThan,
+            stockLessThan,
+            stockGreaterThan,
+            sellerId,
+            name);
+
+        String categoriesString = Optional.ofNullable(
+            availableFiltersMap.get("categoryIds")
+            ).map(Object::toString)
+            .orElse(null);
+        List<Long> availableCategoriesIds = categoriesString != null ? Arrays.asList(categoriesString.split(","))
+            .stream()
+            .map(Long::parseLong)
+            .collect(Collectors.toList())
+            : new ArrayList<>();
+        List<Category> availableCategories = availableCategoriesIds.isEmpty() ?
+        new ArrayList<>() 
+        : categoryService.findAllByParentId(availableCategoriesIds).stream()
+        .filter(category -> {
+            return categoryIds == null || !categoryIds.contains(category.getId());
+        }).collect(Collectors.toList());
+        List<AvailableFilterDTO> availableFilters = ProductPaginatedResponseDTO
+        .getAvailableFilters(availableFiltersMap, availableCategories);
+        List<AppliedFilterDTO> appliedFilters = ProductPaginatedResponseDTO.getAppliedFilters(
+            categoryIds == null || categoryIds.isEmpty() ? new ArrayList<>() : categoryService.findAllById(categoryIds),
+            priceLessThan,
+            priceGreaterThan,
+            stockLessThan,
+            stockGreaterThan,
+            sellerId,
+            name,
+            offset,
+            limit
+        );
         return new ProductPaginatedResponseDTO(
-            Set.of(),
-            Set.of(),
-            products.size(),
+            availableFilters,
+            appliedFilters,
+            (int) page.getTotalElements(),
             offset,
             limit,
-            products.stream().skip(offset).limit(limit).map(ProductMapper::toResponse).collect(Collectors.toList())
+            page.getContent().stream().map(productMapper::toResponse).collect(Collectors.toList())
         );
+    }
+
+    @Override
+    public byte[] getProductImage(Long productId, Long imageId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> new ProductNotFoundException(productId));
+
+        return product.getImageFiles().stream()
+            .filter(img -> img.getId().equals(imageId))
+            .findFirst()
+            .map(ProductImage::getData)
+            .orElseThrow(() -> new ProductNotFoundException("Image not found for product " + productId));
     }
 }

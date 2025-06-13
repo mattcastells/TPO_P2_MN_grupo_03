@@ -5,31 +5,24 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterRequestDTO {
-    @NotBlank(message = "Firstname is required")
-    @Size(min = 2, max = 50, message = "Firstname must be between 2 and 50 characters")
-    private String firstname;
-
-    @NotBlank(message = "Lastname is required")
-    @Size(min = 2, max = 50, message = "Lastname must be between 2 and 50 characters")
-    private String lastname;
-
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be a valid email")
-    private String email;
+public class UpdatePasswordRequestDTO {
+    @NotBlank(message = "Current password is required")
+    private String currentPassword;
 
     @NotBlank(message = "New password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$", 
             message = "Password must be at least 6 characters, include at least one letter and one number, and contain only letters and numbers.")
-    private String password;
+    private String newPassword;
 
-}
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be a valid email")
+    private String email;
+
+} 

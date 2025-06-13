@@ -55,14 +55,26 @@ public class CategoryService implements ICategoryService {
         .map(categoryMapper::toResponseDTO)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
     }
-    
+
+    @Override
+    public List<Category> findAllById(List<Long> ids) {
+        return categoryRepository.findAllById(ids);
+    }
+
+    @Override
+    public List<Category> findAllByParentId(List<Long> parentIds) {
+        return categoryRepository.findAllByParentIdIn(parentIds);
+    }
+
     @Override
     public CategoryResponseDTO create(CategoryRequestDTO categoryRequestDTO) {
         categoryRepository.findByNameIgnoreCase(categoryRequestDTO.getName())
             .ifPresent(category -> {
                 throw new DuplicateEntityException("Category already exists");
             });
-        Category category = new Category(categoryRequestDTO.getName().toLowerCase());
+        Category parent = categoryRequestDTO.getParentId() != null ? categoryRepository.findById(categoryRequestDTO.getParentId())
+            .orElseThrow(() -> new CategoryNotFoundException(categoryRequestDTO.getParentId())) : null;
+        Category category = new Category(categoryRequestDTO.getName().toLowerCase(), parent);
         Category savedCategory = categoryRepository.save(category);
         return categoryMapper.toResponseDTO(savedCategory);
     }
@@ -73,7 +85,13 @@ public class CategoryService implements ICategoryService {
     public CategoryResponseDTO update(CategoryPatchRequestDTO categoryPatchRequestDTO){
         Category category = categoryRepository.findById(categoryPatchRequestDTO.getId())
             .orElseThrow(() -> new CategoryNotFoundException(categoryPatchRequestDTO.getId()));
-        category.setName(categoryPatchRequestDTO.getName());
+        if(categoryPatchRequestDTO.getName() != null) {
+            category.setName(categoryPatchRequestDTO.getName());
+        }
+        if(categoryPatchRequestDTO.getParentId() != null) {
+            category.setParent(categoryPatchRequestDTO.getParentId() != null ? categoryRepository.findById(categoryPatchRequestDTO.getParentId())
+            .orElseThrow(() -> new CategoryNotFoundException(categoryPatchRequestDTO.getParentId())) : null);
+        }
         categoryRepository.save(category);
         return categoryMapper.toResponseDTO(category);
     }

@@ -9,12 +9,14 @@ import lombok.RequiredArgsConstructor;
 import uade.api.tpo_p2_mn_grupo_03.config.JwtService;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.AuthenticationRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.RegisterRequestDTO;
+import uade.api.tpo_p2_mn_grupo_03.dto.request.UpdatePasswordRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.response.AuthenticationResponseDTO;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 import uade.api.tpo_p2_mn_grupo_03.model.UserRole;
 import uade.api.tpo_p2_mn_grupo_03.repository.UserRepository;
 import uade.api.tpo_p2_mn_grupo_03.service.IAuthenticationService;
 import uade.api.tpo_p2_mn_grupo_03.service.impl.userService.exception.UserAlreadyExistsException;
+import uade.api.tpo_p2_mn_grupo_03.service.impl.userService.exception.UserNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +38,7 @@ public class AuthenticationService implements IAuthenticationService {
                     passwordEncoder.encode(request.getPassword()),
                     request.getFirstname(),
                     request.getLastname(),
-                    UserRole.valueOf(request.getRole())
+                    UserRole.BUYER
                     );
 
                     userRepository.save(user);
@@ -54,6 +56,27 @@ public class AuthenticationService implements IAuthenticationService {
                                                 request.getPassword()));
                 var user = userRepository.findByEmail(request.getEmail())
                                 .orElseThrow();
+                var jwtToken = jwtService.generateToken(user);
+                return AuthenticationResponseDTO.builder()
+                                .accessToken(jwtToken)
+                                .build();
+        }
+
+        @Override
+        public AuthenticationResponseDTO updatePassword(String email, UpdatePasswordRequestDTO request) {
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new UserNotFoundException(email));
+
+                // Verificar la contraseña actual
+                if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                        throw new RuntimeException("Current password is incorrect");
+                }
+
+                // Actualizar la contraseña
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                userRepository.save(user);
+
+                // Generar nuevo token
                 var jwtToken = jwtService.generateToken(user);
                 return AuthenticationResponseDTO.builder()
                                 .accessToken(jwtToken)

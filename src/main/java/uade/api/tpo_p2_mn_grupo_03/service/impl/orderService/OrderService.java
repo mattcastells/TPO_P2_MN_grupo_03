@@ -1,6 +1,8 @@
 package uade.api.tpo_p2_mn_grupo_03.service.impl.orderService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.CreateOrderRequestDTO;
 import uade.api.tpo_p2_mn_grupo_03.dto.request.ProductQuantityDTO;
@@ -44,7 +46,7 @@ public class OrderService implements IOrderService {
      * @throws OrderNotFoundException if the order is not found
      */
     public OrderResponseDTO findById(Long id) {
-        return orderRepository.findById(id)
+        return orderRepository.findByIdWithProducts(id)
                 .map(this::convertToDTO)
                 .orElseThrow(() -> new OrderNotFoundException(id));
     }
@@ -80,6 +82,8 @@ public class OrderService implements IOrderService {
     private OrderProductResponseDTO convertOrderProductToDTO(OrderProduct orderProduct) {
         return OrderProductResponseDTO.builder()
                 .productId(orderProduct.getProduct().getId())
+                .name(orderProduct.getProduct().getName())
+                .price(orderProduct.getProduct().getPrice())
                 .quantity(orderProduct.getQuantity())
                 .subtotal(orderProduct.getSubtotal())
                 .createdAt(orderProduct.getCreatedAt())
@@ -89,9 +93,7 @@ public class OrderService implements IOrderService {
 
     // TODO: refactor in smaller methods
     public OrderResponseDTO createOrder(CreateOrderRequestDTO createOrderRequestDTO, User user) {
-        Order order = orderRepository
-            .findFirstByUserAndStatus(user, OrderStatus.PENDING)
-            .orElse(new Order());
+        Order order = new Order();
         if(order.getProducts() == null) {
             order.setProducts(new HashSet<>());
         }
@@ -145,5 +147,15 @@ public class OrderService implements IOrderService {
         order.calculateTotal();
         Order savedOrder = orderRepository.save(order);
         return convertToDTO(savedOrder);
+    }
+
+    @Override
+    public List<OrderResponseDTO> findByUserId(Long userId, Integer offset, Integer limit) {
+        Pageable pageable = PageRequest.of(offset / limit, limit);
+        return orderRepository.findByUserIdWithProducts(userId, pageable)
+                .getContent()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
     }
 } 

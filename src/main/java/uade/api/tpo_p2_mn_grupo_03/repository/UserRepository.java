@@ -1,6 +1,8 @@
 package uade.api.tpo_p2_mn_grupo_03.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import uade.api.tpo_p2_mn_grupo_03.model.User;
 
@@ -19,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return An Optional containing the user if found
      */
     Optional<User> findByEmail(String email);
+
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.address WHERE u.id = :id")
+    Optional<User> findByIdWithAddress(@Param("id") Long id);
 } 

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @Builder
@@ -22,6 +23,13 @@ public class Category {
     @Column(nullable = false, unique = true)
     private String name;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<Category> children;
+
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -30,6 +38,11 @@ public class Category {
 
     public Category(String name) {
         this.name = name;
+    }
+
+    public Category(String name, Category parent) {
+        this.name = name;
+        this.parent = parent;
     }
 
     @PrePersist
@@ -48,6 +61,7 @@ public class Category {
         return "Category{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", parent=" + (parent != null ? parent.getId() : "null") +
                 '}';
     }
 } 
