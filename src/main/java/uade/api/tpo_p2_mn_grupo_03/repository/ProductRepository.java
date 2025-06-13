@@ -74,7 +74,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
            "(:priceLessThan IS NULL OR p.price <= :priceLessThan) AND " +
            "(:priceGreaterThan IS NULL OR p.price > :priceGreaterThan) AND " +
            "(:stockLessThan IS NULL OR p.stock < :stockLessThan) AND " +
-           "(:stockGreaterThan IS NULL OR p.stock > :stockGreaterThan) AND " +
+           "(:stockGreaterThan IS NULL OR p.stock >= :stockGreaterThan) AND " +
            "(:sellerId IS NULL OR p.seller.id = :sellerId) AND " +
            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%')))")
     Page<Product> findWithFilters(

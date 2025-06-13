@@ -188,6 +188,10 @@ public class ProductService implements IProductService {
             Integer offset,
             Integer limit
     ) {
+        if(stockGreaterThan == null || (stockGreaterThan != null && stockGreaterThan <= 0)) {
+            stockGreaterThan = 1;
+        }
+        System.out.println(stockGreaterThan);
         Pageable pageable = PageRequest.of(offset / limit, limit);
         
         Page<Product> page = productRepository.findWithFilters(
