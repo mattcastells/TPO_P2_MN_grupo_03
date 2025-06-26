@@ -72,6 +72,16 @@ public class AuthenticationService implements IAuthenticationService {
                         throw new RuntimeException("Current password is incorrect");
                 }
 
+                // Validar que la contraseña introducida no sea la actual
+                if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                        throw new RuntimeException("New password must be different from current password");
+                }
+
+                // Verificar que el email en el request coincida con el del user autenticado
+                if (!email.equals(request.getEmail())) {
+                        throw new RuntimeException("Email mismatch");
+                    }
+
                 // Actualizar la contraseña
                 user.setPassword(passwordEncoder.encode(request.getNewPassword()));
                 userRepository.save(user);
